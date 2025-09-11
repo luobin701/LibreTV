@@ -1,0 +1,26 @@
+name: Sync IPTV Source
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # 每天凌晨2点（UTC）自动运行
+  workflow_dispatch:      # 支持手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout this repository
+      uses: actions/checkout@v4
+
+    - name: Download latest IPTV source
+      run: |
+        curl -L -o cn.m3u https://raw.githubusercontent.com/iptv-org/iptv/master/streams/cn.m3u
+
+    - name: Commit and push if changed
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+        git add cn.m3u
+        git diff --cached --quiet || git commit -m "Update cn.m3u from iptv-org/iptv [auto-sync]"
+        git push
